@@ -1,0 +1,21 @@
+{
+  "name": "yapi-ts-gen",
+  "version": "1.0.0",
+  "description": "YAPI TypeScript API Generator",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "dev": "npx ts-node src/index.ts"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "vitest": "^3.0.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "typescript": "^5.3.3"
+  }
+}
