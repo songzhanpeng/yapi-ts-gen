@@ -1,3 +1,5 @@
+import { Whitelist } from "./config";
+
 export interface ParsedApiData {
   functionName: string;
   interfaceName: string;
@@ -97,13 +99,6 @@ const replaceWord = (word: string) => {
   return word;
 };
 
-const Whitelist = [
-  "/svc/api/v1",
-  "/svc/project/v1",
-  "/svc/api/group/item/v1",
-  "/svc/api/group/v1",
-  "/ms-soa-service/v1",
-];
 
 export function extractNameAndParams(
   path: string,
