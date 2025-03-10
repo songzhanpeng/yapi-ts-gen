@@ -19,52 +19,58 @@ type JsonSchema = {
 };
 
 export function parseJsonSchema(schema: JsonSchema | null, level = 0): string {
-  if (!schema) return '{}';
+  if (!schema) return "{}";
 
-  const indent = '  '.repeat(level);
+  const indent = "  ".repeat(level);
 
   switch (schema.type) {
-    case 'object':
-      if (!schema.properties) return 'Record<string, any>';
+    case "object":
+      if (!schema.properties) return "Record<string, any>";
 
       const properties = Object.entries(schema.properties)
         .map(([key, value]) => {
           const type = parseJsonSchema(value, level + 1);
           const isRequired = schema.required?.includes(key);
           // 处理可能为null的字段
-          const isNullable = value.type === 'null' || (Array.isArray(value.type) && value.type.includes('null'));
-          const description = value.description ? ` // ${value.description}` : '';
-          return `${indent}${key}${!isRequired || isNullable ? '?' : ''}: ${type};${description}`;
+          const isNullable =
+            value.type === "null" ||
+            (Array.isArray(value.type) && value.type.includes("null"));
+          const description = value.description
+            ? ` // ${value.description}`
+            : "";
+          return `${indent}${key}${!isRequired || isNullable ? "?" : ""}: ${type};${description}`;
         })
-        .join('\n');
+        .join("\n");
 
       return `{\n${properties}\n${indent}}`;
 
-    case 'array':
-      if (!schema.items) return 'any[]';
+    case "array":
+      if (!schema.items) return "any[]";
       const itemType = parseJsonSchema(schema.items, level);
       return `${itemType}[]`;
 
-    case 'string':
-      return 'string';
+    case "string":
+      return "string";
 
-    case 'number':
-    case 'integer':
-      return 'number';
+    case "number":
+    case "integer":
+      return "number";
 
-    case 'boolean':
-      return 'boolean';
+    case "boolean":
+      return "boolean";
 
-    case 'null':
-      return 'null';
+    case "null":
+      return "null";
 
     default:
       if (Array.isArray(schema.type)) {
         // 处理联合类型
-        const types = schema.type.map(t => t === 'null' ? 'null' : parseJsonSchema({ type: t }, level));
-        return types.join(' | ');
+        const types = schema.type.map((t) =>
+          t === "null" ? "null" : parseJsonSchema({ type: t }, level)
+        );
+        return types.join(" | ");
       }
-      return 'any';
+      return "any";
   }
 }
 
@@ -81,14 +87,29 @@ function matchPath(path: string, whitelist: string[]): string | null {
 
 const replaceWord = (word: string) => {
   if (word.includes("_")) {
-    return word.split("_").map((w, index) => index === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)).join('');
+    return word
+      .split("_")
+      .map((w, index) =>
+        index === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)
+      )
+      .join("");
   }
   return word;
-}
+};
 
-const Whitelist = ["/svc/api/v1", "/svc/project/v1"];
+const Whitelist = [
+  "/svc/api/v1",
+  "/svc/project/v1",
+  "/svc/api/group/item/v1",
+  "/svc/api/group/v1",
+  "/ms-soa-service/v1",
+];
 
-export function extractNameAndParams(path: string, method: string, whitelist: string[] = Whitelist): ParsedApiData {
+export function extractNameAndParams(
+  path: string,
+  method: string,
+  whitelist: string[] = Whitelist
+): ParsedApiData {
   const newPath = matchPath(path, whitelist);
   if (!newPath) {
     return {
@@ -99,18 +120,18 @@ export function extractNameAndParams(path: string, method: string, whitelist: st
       path: "",
       params: "{}",
       response: "{}",
-      pathParams: []
+      pathParams: [],
     };
   }
 
   // Remove leading slash and split the path into parts
-  const parts = newPath.replace(/^\//, '').split('/');
+  const parts = newPath.replace(/^\//, "").split("/");
   const pathParams: string[] = [];
-  let functionName = '';
+  let functionName = "";
 
   // Process each part of the path
-  parts.forEach(part => {
-    if (part.startsWith('{') && part.endsWith('}')) {
+  parts.forEach((part) => {
+    if (part.startsWith("{") && part.endsWith("}")) {
       // It's a path parameter, process it
       const paramName = part.slice(1, -1); // Remove the curly braces
       // 保持原始参数名称
@@ -118,28 +139,35 @@ export function extractNameAndParams(path: string, method: string, whitelist: st
 
       // 只在函数名中使用格式化的参数名
       const formattedParam = replaceWord(paramName);
-      functionName += "By" + formattedParam.charAt(0).toUpperCase() + formattedParam.slice(1);
+      functionName +=
+        "By" + formattedParam.charAt(0).toUpperCase() + formattedParam.slice(1);
     } else {
       // It's a normal path segment, convert to camel case and add it
       const formattedPart = replaceWord(part);
-      functionName += formattedPart.charAt(0).toUpperCase() + formattedPart.slice(1);
+      functionName +=
+        formattedPart.charAt(0).toUpperCase() + formattedPart.slice(1);
     }
   });
 
-  // Add method prefix to function name
-  functionName = method.toLowerCase() + functionName;
+  if (!functionName.toLowerCase().includes(method.toLowerCase())) {
+    // Add method prefix to function name
+    functionName = method.toLowerCase() + functionName;
+  } else {
+    functionName = functionName.charAt(0).toLowerCase() + functionName.slice(1);
+  }
 
   // The interface name should be in PascalCase (first letter uppercase)
-  const interfaceName = functionName.charAt(0).toUpperCase() + functionName.slice(1);
+  const interfaceName =
+    functionName.charAt(0).toUpperCase() + functionName.slice(1);
 
   return {
     functionName,
     interfaceName,
-    title: '',
+    title: "",
     method,
     path,
-    params: '{}',
-    response: '{}',
-    pathParams
+    params: "{}",
+    response: "{}",
+    pathParams,
   };
 }
