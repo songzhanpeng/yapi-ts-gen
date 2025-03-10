@@ -6,6 +6,7 @@ export interface ParsedApiData {
   path: string;
   params: string;
   response: string;
+  pathParams: string[];
 }
 
 // 解析 JSON Schema 为 TypeScript 类型
@@ -13,6 +14,8 @@ type JsonSchema = {
   type: string | string[];
   properties?: { [key: string]: JsonSchema };
   items?: JsonSchema;
+  required?: string[];
+  description?: string;
 };
 
 export function parseJsonSchema(schema: JsonSchema | null, level = 0): string {
@@ -27,13 +30,15 @@ export function parseJsonSchema(schema: JsonSchema | null, level = 0): string {
       const properties = Object.entries(schema.properties)
         .map(([key, value]) => {
           const type = parseJsonSchema(value, level + 1);
+          const isRequired = schema.required?.includes(key);
           // 处理可能为null的字段
           const isNullable = value.type === 'null' || (Array.isArray(value.type) && value.type.includes('null'));
-          return `${indent}${key}${isNullable ? '?' : ''}: ${type};`;
+          const description = value.description ? ` // ${value.description}` : '';
+          return `${indent}${key}${!isRequired || isNullable ? '?' : ''}: ${type};${description}`;
         })
         .join('\n');
 
-      return level === 0 ? `{\n${properties}\n}` : `{\n${properties}\n${indent}}`;
+      return `{\n${properties}\n${indent}}`;
 
     case 'array':
       if (!schema.items) return 'any[]';
@@ -59,11 +64,9 @@ export function parseJsonSchema(schema: JsonSchema | null, level = 0): string {
         const types = schema.type.map(t => t === 'null' ? 'null' : parseJsonSchema({ type: t }, level));
         return types.join(' | ');
       }
-      return '{}';
+      return 'any';
   }
 }
-
-
 
 function matchPath(path: string, whitelist: string[]): string | null {
   for (const prefix of whitelist) {
@@ -94,43 +97,49 @@ export function extractNameAndParams(path: string, method: string, whitelist: st
       title: "",
       method: "",
       path: "",
-      params: "",
-      response: "",
+      params: "{}",
+      response: "{}",
+      pathParams: []
     };
   }
+
   // Remove leading slash and split the path into parts
   const parts = newPath.replace(/^\//, '').split('/');
-
-  // Create a function name and interface name starting with the HTTP method
-  let functionName = method.toLowerCase();
+  const pathParams: string[] = [];
+  let functionName = '';
 
   // Process each part of the path
   parts.forEach(part => {
     if (part.startsWith('{') && part.endsWith('}')) {
       // It's a path parameter, process it
       const paramName = part.slice(1, -1); // Remove the curly braces
-      const formattedParam = replaceWord(paramName)
+      // 保持原始参数名称
+      pathParams.push(paramName);
 
-      const formattedParamName = "By" + formattedParam.charAt(0).toUpperCase() + formattedParam.slice(1);
-      functionName += formattedParamName; // Append to function name
+      // 只在函数名中使用格式化的参数名
+      const formattedParam = replaceWord(paramName);
+      functionName += "By" + formattedParam.charAt(0).toUpperCase() + formattedParam.slice(1);
     } else {
       // It's a normal path segment, convert to camel case and add it
-      const formattedPart = replaceWord(part)
+      const formattedPart = replaceWord(part);
       functionName += formattedPart.charAt(0).toUpperCase() + formattedPart.slice(1);
     }
   });
 
+  // Add method prefix to function name
+  functionName = method.toLowerCase() + functionName;
+
   // The interface name should be in PascalCase (first letter uppercase)
   const interfaceName = functionName.charAt(0).toUpperCase() + functionName.slice(1);
 
-  // Return the result in the required format
   return {
     functionName,
     interfaceName,
     title: '',
     method,
     path,
-    params: '{}',  // Adjust this if you plan to extract actual parameters
+    params: '{}',
     response: '{}',
+    pathParams
   };
 }

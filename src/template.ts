@@ -3,10 +3,6 @@ export interface CodeTemplate {
   fileTemplate: string;
   // 单个接口的模板
   interfaceTemplate: string;
-  // 参数格式化函数
-  formatParams?: (params: any) => string;
-  // 响应格式化函数
-  formatResponse?: (response: any) => string;
 }
 
 export interface ApiConfig {
@@ -26,33 +22,38 @@ export const defaultTemplate: CodeTemplate = {
 
   interfaceTemplate: `
 /** {{title}} - 请求参数 */
-export interface I{{interfaceName}}Params {
-{{params}}
-}
+export interface I{{interfaceName}}Params {{params}}
 
 /** {{title}} - 响应数据 */
 export interface I{{interfaceName}}Response {{response}}
 
 /** {{title}} {{method}} {{path}} */
 export async function {{functionName}}(params: I{{interfaceName}}Params): Promise<I{{interfaceName}}Response> {
+  {{#if hasPathParams}}
+  const { {{pathParams}}, ...restParams } = params;
   return request<I{{interfaceName}}Response>(\`{{path}}\`, {
     method: '{{method}}',
     headers: {
       'Content-Type': 'application/json'
     },
-    {{requestType}}: params
+    {{#if isGet}}
+    params: restParams
+    {{else}}
+    data: restParams
+    {{/if}}
   });
-}`,
-
-  formatParams: (params: any) => {
-    if (!params || typeof params !== 'object') return '{}';
-    return Object.entries(params)
-      .map(([key, value]: [string, any]) => `  ${key}: ${value.type || 'string'};`)
-      .join('\n');
-  },
-
-  formatResponse: (response: any) => {
-    if (!response || typeof response !== 'object') return '{}';
-    return JSON.stringify(response, null, 2);
-  }
+  {{else}}
+  return request<I{{interfaceName}}Response>('{{path}}', {
+    method: '{{method}}',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    {{#if isGet}}
+    params: params
+    {{else}}
+    data: params
+    {{/if}}
+  });
+  {{/if}}
+}`
 }; 
