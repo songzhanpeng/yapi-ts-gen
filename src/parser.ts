@@ -1,96 +1,136 @@
 export interface ParsedApiData {
-    functionName: string;
-    interfaceName: string;
-    title: string;
-    method: string;
-    path: string;
-    params: string;
-    response: string;
-  }
-  
-  // 解析 API JSON，生成接口定义
-  export function parseJsonSchema(schema: any): string {
-    if (!schema || !schema.type) return '{}';
-  
-    switch (schema.type) {
-      case 'object':
-        if (!schema.properties) return 'Record<string, any>';
-        return `{
-          ${Object.entries(schema.properties)
-            .map(([key, value]) => `${key}: ${parseJsonSchema(value)};`)
-            .join('\n')}
-        }`;
-      case 'array':
-        return `${parseJsonSchema(schema.items)}[]`;
-      case 'string':
-        return 'string';
-      case 'number':
-      case 'integer':
-        return 'number';
-      case 'boolean':
-        return 'boolean';
-      default:
-        return '{}';
-    }
-  }
-  
-  // 提取接口名称和路径参数
-  export function extractNameAndParams(path: string, method: string): ParsedApiData {
-    // 移除开头的斜杠并分割路径
-    const parts = path.replace(/^\//, '').split('/');
-    
-    // 收集路径参数和非路径参数部分
-    const pathParams: string[] = [];
-    const nonPathParts: string[] = [];
-    
-    // 过滤掉不需要的部分（api, v1等）并收集有效部分
-    parts.forEach(part => {
-      if (part.startsWith('{') && part.endsWith('}')) {
-        const paramName = part.slice(1, -1);
-        pathParams.push(paramName);
-      } else if (!part.match(/^(api)$/i) && !part.match(/^v\d+$/)) {
-        // 跳过 api 和版本号
-        nonPathParts.push(part);
+  functionName: string;
+  interfaceName: string;
+  title: string;
+  method: string;
+  path: string;
+  params: string;
+  response: string;
+}
+
+// 解析 JSON Schema 为 TypeScript 类型
+type JsonSchema = {
+  type: string | string[];
+  properties?: { [key: string]: JsonSchema };
+  items?: JsonSchema;
+};
+
+export function parseJsonSchema(schema: JsonSchema | null, level = 0): string {
+  if (!schema) return '{}';
+
+  const indent = '  '.repeat(level);
+
+  switch (schema.type) {
+    case 'object':
+      if (!schema.properties) return 'Record<string, any>';
+
+      const properties = Object.entries(schema.properties)
+        .map(([key, value]) => {
+          const type = parseJsonSchema(value, level + 1);
+          // 处理可能为null的字段
+          const isNullable = value.type === 'null' || (Array.isArray(value.type) && value.type.includes('null'));
+          return `${indent}${key}${isNullable ? '?' : ''}: ${type};`;
+        })
+        .join('\n');
+
+      return level === 0 ? `{\n${properties}\n}` : `{\n${properties}\n${indent}}`;
+
+    case 'array':
+      if (!schema.items) return 'any[]';
+      const itemType = parseJsonSchema(schema.items, level);
+      return `${itemType}[]`;
+
+    case 'string':
+      return 'string';
+
+    case 'number':
+    case 'integer':
+      return 'number';
+
+    case 'boolean':
+      return 'boolean';
+
+    case 'null':
+      return 'null';
+
+    default:
+      if (Array.isArray(schema.type)) {
+        // 处理联合类型
+        const types = schema.type.map(t => t === 'null' ? 'null' : parseJsonSchema({ type: t }, level));
+        return types.join(' | ');
       }
-    });
+      return '{}';
+  }
+}
 
-    // 生成函数名
-    let functionName = '';
-    
-    // 处理资源名称部分
-    if (nonPathParts.length > 0) {
-      // 将所有部分转换为驼峰命名
-      const nameParts = nonPathParts.map(part => {
-        // 移除查询参数部分
-        const cleanPart = part.split('?')[0];
-        // 转换为驼峰命名
-        return cleanPart.split('_')
-          .map((word, index) => index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-          .join('');
-      });
 
-      // 组合函数名
-      functionName = nameParts.map((part, index) => 
-        index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)
-      ).join('');
+
+function matchPath(path: string, whitelist: string[]): string | null {
+  for (const prefix of whitelist) {
+    if (path.startsWith(prefix)) {
+      // 返回去掉白名单前缀后的剩余路径
+      return path.slice(prefix.length);
     }
+  }
+  // 如果没有匹配的前缀，返回 null
+  return path;
+}
 
-    // 添加 HTTP 方法前缀
-    if (!functionName.toLowerCase().includes(method.toLowerCase())) {
-      functionName = method.toLowerCase() + functionName.charAt(0).toUpperCase() + functionName.slice(1);
-    }
+const replaceWord = (word: string) => {
+  if (word.includes("_")) {
+    return word.split("_").map((w, index) => index === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)).join('');
+  }
+  return word;
+}
 
-    // 生成接口名称（大驼峰）
-    const interfaceName = functionName.charAt(0).toUpperCase() + functionName.slice(1);
+const Whitelist = ["/svc/api/v1", "/svc/project/v1"];
 
+export function extractNameAndParams(path: string, method: string, whitelist: string[] = Whitelist): ParsedApiData {
+  const newPath = matchPath(path, whitelist);
+  if (!newPath) {
     return {
-      functionName,
-      interfaceName,
-      title: '',
-      method,
-      path,
-      params: '{}',
-      response: '{}'
+      functionName: "",
+      interfaceName: "",
+      title: "",
+      method: "",
+      path: "",
+      params: "",
+      response: "",
     };
   }
-  
+  // Remove leading slash and split the path into parts
+  const parts = newPath.replace(/^\//, '').split('/');
+
+  // Create a function name and interface name starting with the HTTP method
+  let functionName = method.toLowerCase();
+
+  // Process each part of the path
+  parts.forEach(part => {
+    if (part.startsWith('{') && part.endsWith('}')) {
+      // It's a path parameter, process it
+      const paramName = part.slice(1, -1); // Remove the curly braces
+      const formattedParam = replaceWord(paramName)
+
+      const formattedParamName = "By" + formattedParam.charAt(0).toUpperCase() + formattedParam.slice(1);
+      functionName += formattedParamName; // Append to function name
+    } else {
+      // It's a normal path segment, convert to camel case and add it
+      const formattedPart = replaceWord(part)
+      functionName += formattedPart.charAt(0).toUpperCase() + formattedPart.slice(1);
+    }
+  });
+
+  // The interface name should be in PascalCase (first letter uppercase)
+  const interfaceName = functionName.charAt(0).toUpperCase() + functionName.slice(1);
+
+  // Return the result in the required format
+  return {
+    functionName,
+    interfaceName,
+    title: '',
+    method,
+    path,
+    params: '{}',  // Adjust this if you plan to extract actual parameters
+    response: '{}',
+  };
+}

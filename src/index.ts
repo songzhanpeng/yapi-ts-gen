@@ -1,8 +1,9 @@
-import { defaultConfig, ApiConfig } from './config';
+import { defaultConfig } from './config';
 import { downloadApiJson } from './fetcher';
 import { extractNameAndParams, ParsedApiData, parseJsonSchema } from './parser';
 import { generateCode, saveToFile } from './generator';
-import { defaultTemplate } from './template';
+import { ApiConfig, defaultTemplate } from './template';
+import { formatCode } from './utils';
 
 async function main(configs: ApiConfig[] = defaultConfig) {
   for (const config of configs) {
@@ -11,11 +12,13 @@ async function main(configs: ApiConfig[] = defaultConfig) {
       const apiJson = await downloadApiJson(config.yapiUrl, config.outputDir, config.outputFileName);
 
       const allApis = apiJson.flatMap((category: any) => {
-        return category.list.map((api: any) => {
+        // 过滤掉包含问号的api
+        return category.list.filter((api: any) => !api.path.includes("?")).map((api: any) => {
+          console.log("api.path", api.path);
           const { functionName, interfaceName } = extractNameAndParams(api.path, api.method);
-          let response = {};
+          let response = "{}";
           try {
-            if (api.res_body) {
+            if (api.res_body_type === "json" && api.res_body) {
               response = parseJsonSchema(JSON.parse(api.res_body));
             }
           } catch (error) {
@@ -26,9 +29,9 @@ async function main(configs: ApiConfig[] = defaultConfig) {
             interfaceName, 
             title: api.title, 
             method: api.method, 
-            path: api.path, 
+            path: api.path.replace(/{/, '${'), 
             params: api.req_query || {}, 
-            response 
+            response: response
           };
         });
       });
