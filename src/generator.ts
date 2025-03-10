@@ -16,10 +16,12 @@ export function generateSingleInterface(
     functionName: apiData.functionName,
     method: apiData.method,
     path: apiData.path,
-    params: template.formatParams ? template.formatParams(apiData.params) : JSON.stringify(apiData.params, null, 2),
-    response: template.formatResponse ? template.formatResponse(apiData.response) : JSON.stringify(apiData.response, null, 2),
+    params: "",
+    response: apiData.response,
     requestType: apiData.method.toLowerCase() === 'get' ? 'params' : 'data'
   };
+
+  console.log("vars", vars);
 
   return replaceTemplateVars(template.interfaceTemplate, vars);
 }

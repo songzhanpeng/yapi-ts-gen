@@ -20,6 +20,7 @@ async function main(configs: ApiConfig[] = defaultConfig) {
           try {
             if (api.res_body_type === "json" && api.res_body) {
               response = parseJsonSchema(JSON.parse(api.res_body));
+              // console.log("response", response);
             }
           } catch (error) {
             console.warn(`Warning: Failed to parse response body for ${api.path}:`, error);
@@ -43,7 +44,7 @@ async function main(configs: ApiConfig[] = defaultConfig) {
         ...(config.template || {})
       });
       
-      saveToFile(code, `${config.outputDir}/${config.outputFileName}`);
+      saveToFile(await formatCode(code), `${config.outputDir}/${config.outputFileName}`);
     } catch (error) {
       console.error(`Error processing ${config.yapiUrl}:`, error);
     }
