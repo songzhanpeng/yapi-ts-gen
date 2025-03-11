@@ -46,7 +46,7 @@ export async function main(configs: ApiConfig[]) {
             api.req_query.forEach((query) => {
               paramSchema.properties[query.name] = {
                 type: query.type || 'string',
-                description: query.desc ? `查询参数 - ${query.desc}` : '查询参数'
+                description: query.desc ? query.desc.split('\n').map(line => line.trim()).join(' ') : '查询参数'
               };
               if (query.required === '1') {
                 paramSchema.required?.push(query.name);
