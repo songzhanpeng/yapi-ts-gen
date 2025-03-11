@@ -1,138 +1,71 @@
-# YApi TypeScript Generator (YApi TS Gen)
+# YAPI TypeScript API Generator
 
-A powerful TypeScript code generator that automatically creates type definitions and API client code from YApi documentation.
+A TypeScript API client generator for YAPI.
 
-[English](#english) | [中文](#chinese)
-
-## English
-
-### Overview
-
-YApi TS Gen is a tool that automatically generates TypeScript interfaces and API client code from YApi documentation. It helps maintain type safety and reduces the manual work needed to keep API client code in sync with your API documentation.
-
-### Features
-
-- 🚀 Automatic TypeScript interface generation from YApi JSON schema
-- 💪 Type-safe API client code generation
-- 🔄 Support for multiple API endpoints
-- ⚡ Fast and efficient processing
-- 🛠️ Customizable code templates
-
-### Installation
+## Installation
 
 ```bash
-npm install yapi-ts-gen
+npm install -g yapi-ts-gen
 ```
 
-### Usage
+## Usage
 
-1. Configure your YApi endpoints in `src/config.ts`
-2. Run the generator:
+1. Initialize the configuration file:
 
 ```bash
-npm run build
-npm start
+yapi-ts-gen --init
 ```
 
-Or for development:
-
-```bash
-npm run dev
-```
-
-### Configuration
-
-Configure your API endpoints in `src/config.ts`. Example configuration:
+This will create a `yapi.config.ts` file in your current directory with the following content:
 
 ```typescript
-export const defaultConfig: ApiConfig[] = [
+import { ApiConfig } from 'yapi-ts-gen';
+
+const config: ApiConfig[] = [
   {
-    yapiUrl: "your-yapi-url",
-    outputDir: "./generated",
-    outputFileName: "api.ts"
+    yapiUrl: 'http://your-yapi-domain/api/open/plugin/export-full?type=json&pid=your-project-id&status=all&token=your-token',
+    outputDir: './src/api',
+    outputFileName: 'api.ts',
+    namespace: 'API'
   }
 ];
+
+export default config;
 ```
 
-### Project Structure
+2. Update the configuration file with your YAPI settings:
+   - `yapiUrl`: Your YAPI export URL
+   - `outputDir`: Directory where the generated API client will be saved
+   - `outputFileName`: Name of the generated API client file
+   - `namespace`: Optional namespace for the generated API client
 
-```
-├── src
-│   ├── config.ts          // Configuration file
-│   ├── fetcher.ts         // YApi data downloader
-│   ├── parser.ts          // API JSON parser
-│   ├── generator.ts       // Code generation logic
-│   └── index.ts          // Main program entry
-├── dist                   // TypeScript compiled output
-├── tsconfig.json         // TypeScript configuration
-└── package.json         // Project dependencies
-```
-
----
-
-## Chinese
-
-### 概述
-
-YApi TS Gen 是一个自动从 YApi 文档生成 TypeScript 接口和 API 客户端代码的工具。它有助于维护类型安全性，并减少保持 API 客户端代码与 API 文档同步所需的手动工作。
-
-### 特性
-
-- 🚀 自动从 YApi JSON schema 生成 TypeScript 接口
-- 💪 类型安全的 API 客户端代码生成
-- 🔄 支持多个 API 端点
-- ⚡ 快速高效的处理
-- 🛠️ 可自定义的代码模板
-
-### 安装
+3. Generate the API client:
 
 ```bash
-npm install yapi-ts-gen
+yapi-ts-gen --generate
 ```
 
-### 使用方法
+## Configuration Options
 
-1. 在 `src/config.ts` 中配置你的 YApi 端点
-2. 运行生成器：
-
-```bash
-npm run build
-npm start
-```
-
-开发模式：
-
-```bash
-npm run dev
-```
-
-### 配置
-
-在 `src/config.ts` 中配置你的 API 端点。配置示例：
+The configuration file supports the following options:
 
 ```typescript
-export const defaultConfig: ApiConfig[] = [
-  {
-    yapiUrl: "你的-yapi-url",
-    outputDir: "./generated",
-    outputFileName: "api.ts"
-  }
-];
+interface ApiConfig {
+  yapiUrl: string;      // YAPI export URL
+  outputDir: string;    // Output directory
+  outputFileName: string; // Output file name
+  namespace?: string;   // Optional namespace
+}
 ```
 
-### 项目结构
+## Features
 
-```
-├── src
-│   ├── config.ts          // 配置文件
-│   ├── fetcher.ts         // YApi 数据下载器
-│   ├── parser.ts          // API JSON 解析器
-│   ├── generator.ts       // 代码生成逻辑
-│   └── index.ts          // 主程序入口
-├── dist                   // TypeScript 编译输出
-├── tsconfig.json         // TypeScript 配置
-└── package.json         // 项目依赖
-```
+- Generates TypeScript API client from YAPI
+- Supports multiple API configurations
+- Generates TypeScript interfaces for request and response types
+- Supports path parameters, query parameters, and request body
+- Formats generated code with Prettier
+- CLI support for easy integration
 
 ## License
 

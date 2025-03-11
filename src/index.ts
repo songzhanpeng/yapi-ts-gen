@@ -1,38 +1,10 @@
-import { defaultConfig } from './config';
 import { downloadApiJson } from './fetcher';
 import { extractNameAndParams, ParsedApiData, parseJsonSchema } from './parser';
 import { generateCode, saveToFile } from './generator';
 import { formatCode } from './utils';
+import { ApiConfig, YapiApiData, YapiCategory, YapiQueryParam } from './types';
 
-interface ApiConfig {
-  yapiUrl: string;
-  outputDir: string;
-  outputFileName: string;
-  namespace?: string;
-}
-
-interface YapiQueryParam {
-  name: string;
-  type?: string;
-  required: string;
-  desc?: string;
-}
-
-interface YapiApiData {
-  path: string;
-  method: string;
-  title: string;
-  req_query?: YapiQueryParam[];
-  req_body_other?: string;
-  res_body_type?: string;
-  res_body?: string;
-}
-
-interface YapiCategory {
-  list: YapiApiData[];
-}
-
-async function main(configs: ApiConfig[] = defaultConfig) {
+export async function main(configs: ApiConfig[]) {
   for (const config of configs) {
     try {
       console.log(`Downloading API definition from YAPI: ${config.yapiUrl}`);
@@ -121,6 +93,4 @@ async function main(configs: ApiConfig[] = defaultConfig) {
     }
   }
 }
-
-main();
 

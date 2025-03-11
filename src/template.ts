@@ -1,17 +1,6 @@
-export interface CodeTemplate {
-  // 文件级别的模板
-  fileTemplate: string;
-  // 单个接口的模板
-  interfaceTemplate: string;
-}
+import { ApiConfig, CodeTemplate } from './types';
 
-export interface ApiConfig {
-    yapiUrl: string;
-    outputDir: string;
-    outputFileName: string;
-    namespace?: string;
-    template?: Partial<CodeTemplate>;
-}
+export type { ApiConfig };
 
 // 默认模板配置
 export const defaultTemplate: CodeTemplate = {
@@ -56,4 +45,20 @@ export async function {{functionName}}(params: I{{interfaceName}}Params): Promis
   });
   {{/if}}
 }`
-}; 
+};
+
+export const defaultConfigTemplate: ApiConfig[] = [
+  {
+    yapiUrl: 'http://your-yapi-domain/api/open/plugin/export-full?type=json&pid=your-project-id&status=all&token=your-token',
+    outputDir: './src/api',
+    outputFileName: 'api.ts',
+    namespace: 'API'
+  }
+];
+
+export const configFileContent = `const { ApiConfig } = require('yapi-ts-gen');
+
+const config = ${JSON.stringify(defaultConfigTemplate, null, 2)};
+
+module.exports = config;
+`; 
