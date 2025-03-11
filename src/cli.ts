@@ -7,7 +7,7 @@ import chalk from 'chalk';
 import { configFileContent } from './template';
 import { main } from './index';
 
-const CONFIG_FILE_NAME = 'yapi.config.ts';
+const CONFIG_FILE_NAME = 'yapi.config.js';
 
 program
   .name('yapi-ts-gen')

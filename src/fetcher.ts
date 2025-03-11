@@ -27,7 +27,7 @@ function saveJsonToFile(data: any, baseDir: string, fileName: string) {
 export async function downloadApiJson(url: string, saveDir: string, fileName: string): Promise<any> {
     try {
         const response = await axios.get(url);
-        saveJsonToFile(response.data, saveDir, fileName);
+        // saveJsonToFile(response.data, saveDir, fileName);
         return response.data;
     } catch (error) {
         throw new Error(`Failed to download API JSON: ${(error as Error).message}`);

@@ -57,7 +57,7 @@ export const defaultConfigTemplate: ApiConfig[] = [
   }
 ];
 
-export const configFileContent = `const { ApiConfig } = require('yapi-ts-gen');
+export const configFileContent = `
 
 const config = ${JSON.stringify(defaultConfigTemplate, null, 2)};
 
