@@ -1,0 +1,17 @@
+node_modules
+# dist
+coverage
+test
+__tests__
+*.log
+*.md
+*.lock
+.env
+.idea
+.vscode
+*.tsbuildinfo
+src
+package-lock.json
+vite.config.ts
+.npmrc
+tests
