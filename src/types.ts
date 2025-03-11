@@ -11,6 +11,7 @@ export interface ApiConfig {
     outputFileName: string;
     namespace?: string;
     template?: Partial<CodeTemplate>;
+    whitelist?: string[];
 }
 
 

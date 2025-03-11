@@ -103,9 +103,9 @@ const replaceWord = (word: string) => {
 export function extractNameAndParams(
   path: string,
   method: string,
-  whitelist: string[] = Whitelist
+  whitelist?: string[]
 ): ParsedApiData {
-  const newPath = matchPath(path, whitelist);
+  const newPath = matchPath(path, whitelist || []);
   if (!newPath) {
     return {
       functionName: "",

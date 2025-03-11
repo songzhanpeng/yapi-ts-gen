@@ -14,7 +14,11 @@ export async function main(configs: ApiConfig[]) {
         // 过滤掉包含问号的api
         return category.list.filter((api) => !api.path.includes("?")).map((api) => {
           console.log("api.path", api.path);
-          const { functionName, interfaceName, pathParams } = extractNameAndParams(api.path, api.method);
+          const { functionName, interfaceName, pathParams } = extractNameAndParams(
+            api.path, 
+            api.method,
+            config.whitelist
+          );
           
           // 构建参数对象
           const paramSchema: {

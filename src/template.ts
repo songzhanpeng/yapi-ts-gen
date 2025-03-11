@@ -52,7 +52,8 @@ export const defaultConfigTemplate: ApiConfig[] = [
     yapiUrl: 'http://your-yapi-domain/api/open/plugin/export-full?type=json&pid=your-project-id&status=all&token=your-token',
     outputDir: './src/api',
     outputFileName: 'api.ts',
-    namespace: 'API'
+    namespace: 'API',
+    whitelist: ['api', 'v1', 'v2']
   }
 ];
 
