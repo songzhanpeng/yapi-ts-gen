@@ -11,11 +11,12 @@ export async function main(configs: ApiConfig[]) {
       const apiJson = await downloadApiJson(config.yapiUrl, config.outputDir, config.outputFileName);
 
       const allApis = apiJson.flatMap((category: YapiCategory) => {
-        // 过滤掉包含问号的api
-        return category.list.filter((api) => !api.path.includes("?")).map((api) => {
-          console.log("api.path", api.path);
+        return category.list.map((api) => {
+          // 移除 URL 中的查询参数部分，只保留路径部分
+          const pathWithoutQuery = api.path.split('?')[0];
+          
           const { functionName, interfaceName, pathParams } = extractNameAndParams(
-            api.path, 
+            pathWithoutQuery, 
             api.method,
             config.whitelist
           );
