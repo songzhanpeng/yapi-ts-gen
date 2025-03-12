@@ -4,7 +4,7 @@ export type { ApiConfig };
 
 // 默认模板配置
 export const defaultTemplate: CodeTemplate = {
-  fileTemplate: `import { request } from '@/utils/request';
+  fileTemplate: `import { request } from '{{requestImportPath}}';
 
 {{interfaces}}
 `,
@@ -53,7 +53,8 @@ export const defaultConfigTemplate: ApiConfig[] = [
     outputDir: './src/api',
     outputFileName: 'api.ts',
     namespace: 'API',
-    whitelist: ['api', 'v1', 'v2']
+    stripPathPrefixes: ['api', 'v1', 'v2'],
+    requestImportPath: '@/utils/request'
   }
 ];
 

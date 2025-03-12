@@ -1,5 +1,3 @@
-import { Whitelist } from "./config";
-
 export interface ParsedApiData {
   functionName: string;
   interfaceName: string;
@@ -76,14 +74,15 @@ export function parseJsonSchema(schema: JsonSchema | null, level = 0): string {
   }
 }
 
-function matchPath(path: string, whitelist: string[]): string | null {
-  for (const prefix of whitelist) {
-    if (path.startsWith(prefix)) {
-      // 返回去掉白名单前缀后的剩余路径
-      return path.slice(prefix.length);
+function matchPath(path: string, stripPathPrefixes: string[]): string | null {
+  if (!stripPathPrefixes?.length) return path;
+
+  for (const prefix of stripPathPrefixes) {
+    const pattern = new RegExp(`^/?${prefix}/?`);
+    if (pattern.test(path)) {
+      return path.replace(pattern, '');
     }
   }
-  // 如果没有匹配的前缀，返回 null
   return path;
 }
 
@@ -103,9 +102,9 @@ const replaceWord = (word: string) => {
 export function extractNameAndParams(
   path: string,
   method: string,
-  whitelist?: string[]
+  stripPathPrefixes?: string[]
 ): ParsedApiData {
-  const newPath = matchPath(path, whitelist || []);
+  const newPath = matchPath(path, stripPathPrefixes || []);
   if (!newPath) {
     return {
       functionName: "",

@@ -57,14 +57,14 @@ export async function ${functionName}(params: I${interfaceName}Params): Promise<
   return [paramsInterface, responseInterface, functionImpl].join('\n\n');
 }
 
-export function generateCode(apis: ParsedApiData[]): string {
+export function generateCode(apis: ParsedApiData[], requestImportPath: string = '@/utils/request'): string {
   // 过滤出支持的 HTTP 方法
   const supportedMethods = ['get', 'post', 'put', 'delete'];
   const filteredApis = apis.filter(api => 
     supportedMethods.includes(api.method.toLowerCase())
   );
 
-  const imports = `import { request } from '@/utils/request';`;
+  const imports = `import { request } from '${requestImportPath}';`;
   const interfaces = filteredApis.map(generateInterface).join('\n\n');
 
   return `${imports}\n\n${interfaces}`;

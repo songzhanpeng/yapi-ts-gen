@@ -18,7 +18,7 @@ export async function main(configs: ApiConfig[]) {
           const { functionName, interfaceName, pathParams } = extractNameAndParams(
             pathWithoutQuery, 
             api.method,
-            config.whitelist
+            config.stripPathPrefixes
           );
           
           // 构建参数对象
@@ -90,7 +90,7 @@ export async function main(configs: ApiConfig[]) {
         });
       });
 
-      const code = generateCode(allApis);
+      const code = generateCode(allApis, config.requestImportPath);
       const formattedCode = await formatCode(code);
       saveToFile(formattedCode, `${config.outputDir}/${config.outputFileName}`);
     } catch (error) {
