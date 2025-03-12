@@ -1,6 +1,6 @@
 {
   "name": "yapi-ts-gen",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "YAPI TypeScript API Generator",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
