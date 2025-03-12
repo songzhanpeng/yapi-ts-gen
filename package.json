@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/songzhanpeng/yapi-ts-gen"
   },
+  "homepage": "https://github.com/songzhanpeng/yapi-ts-gen",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
