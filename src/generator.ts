@@ -30,7 +30,7 @@ export interface I${interfaceName}Response ${response}`;
     // 替换路径中的参数格式，从 {param} 变为 ${param}
     const urlPath = path.replace(/{/g, '${');
 
-    functionImpl = `/** ${title} ${method} ${path} */
+    functionImpl = `${apiData.yapiBaseUrl && apiData.projectId && apiData.apiId ? `/** @see ${apiData.yapiBaseUrl}/project/${apiData.projectId}/interface/api/${apiData.apiId} */\n` : ''}/** ${title} ${method} ${path} */
 export async function ${functionName}(params: I${interfaceName}Params): Promise<I${interfaceName}Response> {
   const { ${pathParams.join(', ')}, ...restParams } = params;
   return request<I${interfaceName}Response>(\`${urlPath}\`, {
@@ -42,7 +42,7 @@ export async function ${functionName}(params: I${interfaceName}Params): Promise<
   });
 }`;
   } else {
-    functionImpl = `/** ${title} ${method} ${path} */
+    functionImpl = `${apiData.yapiBaseUrl && apiData.projectId && apiData.apiId ? `/** @see ${apiData.yapiBaseUrl}/project/${apiData.projectId}/interface/api/${apiData.apiId} */\n` : ''}/** ${title} ${method} ${path} */
 export async function ${functionName}(params: I${interfaceName}Params): Promise<I${interfaceName}Response> {
   return request<I${interfaceName}Response>('${path}', {
     method: '${method}',

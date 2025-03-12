@@ -7,6 +7,9 @@ export interface ParsedApiData {
   params: string;
   response: string;
   pathParams: string[];
+  yapiBaseUrl?: string;
+  projectId?: number;
+  apiId?: number;
 }
 
 // 解析 JSON Schema 为 TypeScript 类型

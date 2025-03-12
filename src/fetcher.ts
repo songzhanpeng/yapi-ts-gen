@@ -27,8 +27,40 @@ function saveJsonToFile(data: any, baseDir: string, fileName: string) {
 export async function downloadApiJson(url: string, saveDir: string, fileName: string): Promise<any> {
     try {
         const response = await axios.get(url);
-        // saveJsonToFile(response.data, saveDir, fileName);
-        return response.data;
+        const data = response.data;
+
+        // 从 URL 中提取 YAPI 相关信息
+        const urlObj = new URL(url);
+        const yapiBaseUrl = `${urlObj.protocol}//${urlObj.host}`;
+        
+        // 处理数据，添加 YAPI 相关信息
+        const processYapiData = (item: any) => {
+            if (!item) return item;
+            const result = {
+                ...item,
+                yapiBaseUrl,
+                project_id: item.project_id,
+                _id: item._id
+            };
+            // 如果有嵌套的 list，也处理它
+            if (result.list && Array.isArray(result.list)) {
+                result.list = result.list.map(processYapiData);
+            }
+            return result;
+        };
+
+        // 处理数据
+        let processedData;
+        if (Array.isArray(data)) {
+            // 处理数组
+            processedData = data.map(processYapiData);
+        } else {
+            // 处理单个对象
+            processedData = processYapiData(data);
+        }
+
+        // saveJsonToFile(processedData, saveDir, fileName);
+        return processedData;
     } catch (error) {
         throw new Error(`Failed to download API JSON: ${(error as Error).message}`);
     }

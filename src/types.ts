@@ -31,6 +31,9 @@ export interface YapiApiData {
     req_body_other?: string;
     res_body_type?: string;
     res_body?: string;
+    yapiBaseUrl?: string;
+    projectId?: number;
+    apiId?: number;
 }
 
 export interface YapiCategory {
