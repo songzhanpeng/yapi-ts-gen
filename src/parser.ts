@@ -124,7 +124,8 @@ export function extractNameAndParams(
   // Remove leading slash and split the path into parts
   const parts = newPath.replace(/^\//, "").split("/");
   const pathParams: string[] = [];
-  let functionName = "";
+  let baseName = "";
+  let paramsName = "";
 
   // Process each part of the path
   parts.forEach((part) => {
@@ -136,15 +137,17 @@ export function extractNameAndParams(
 
       // 只在函数名中使用格式化的参数名
       const formattedParam = replaceWord(paramName);
-      functionName +=
+      paramsName +=
         "By" + formattedParam.charAt(0).toUpperCase() + formattedParam.slice(1);
     } else {
       // It's a normal path segment, convert to camel case and add it
       const formattedPart = replaceWord(part);
-      functionName +=
+      baseName +=
         formattedPart.charAt(0).toUpperCase() + formattedPart.slice(1);
     }
   });
+
+  let functionName = baseName + paramsName;
 
   if (!functionName.toLowerCase().includes(method.toLowerCase())) {
     // Add method prefix to function name

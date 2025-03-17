@@ -11,8 +11,8 @@ describe('Parser', () => {
         const result = extractNameAndParams('/api/v1/user/{userId}/profile', 'GET', []);
         expect(result).toEqual({
             ...result,
-            functionName: 'getApiV1UserByUserIdProfile',
-            interfaceName: 'GetApiV1UserByUserIdProfile',
+            functionName: 'getApiV1UserProfileByUserId',
+            interfaceName: 'GetApiV1UserProfileByUserId',
         });
     });
 
@@ -29,8 +29,8 @@ describe('Parser', () => {
         const result = extractNameAndParams('/api/v1/org/{orgId}/project/{projectId}', 'GET', []);
         expect(result).toEqual({
             ...result,
-            functionName: 'getApiV1OrgByOrgIdProjectByProjectId',
-            interfaceName: 'GetApiV1OrgByOrgIdProjectByProjectId',
+            functionName: 'getApiV1OrgProjectByOrgIdByProjectId',
+            interfaceName: 'GetApiV1OrgProjectByOrgIdByProjectId',
         });
     });
 
@@ -47,8 +47,8 @@ describe('Parser', () => {
         const result = extractNameAndParams('/api/v1/project/{projectId}/member/{memberId}', 'DELETE', []);
         expect(result).toEqual({
             ...result,
-            functionName: 'deleteApiV1ProjectByProjectIdMemberByMemberId',
-            interfaceName: 'DeleteApiV1ProjectByProjectIdMemberByMemberId',
+            functionName: 'deleteApiV1ProjectMemberByProjectIdByMemberId',
+            interfaceName: 'DeleteApiV1ProjectMemberByProjectIdByMemberId',
         });
     });
 
@@ -56,8 +56,8 @@ describe('Parser', () => {
         const result = extractNameAndParams('/svc/api/v1/project/{project_id}/subsystems', 'GET', []);
         expect(result).toEqual({
             ...result,
-            functionName: 'getSvcApiV1ProjectByProjectIdSubsystems',
-            interfaceName: 'GetSvcApiV1ProjectByProjectIdSubsystems',
+            functionName: 'getSvcApiV1ProjectSubsystemsByProjectId',
+            interfaceName: 'GetSvcApiV1ProjectSubsystemsByProjectId',
         });
     });
 });
