@@ -1,5 +1,7 @@
 import fs from 'fs';
 import prettier from "prettier";
+// Import fabric configuration
+const fabric = require('@umijs/fabric');
 
 /**
  * 格式化 JSON 生成的代码
@@ -9,11 +11,8 @@ import prettier from "prettier";
 export async function formatCode(code: string): Promise<string> {
   try {
     return await prettier.format(code, {
+      ...fabric.prettier,
       parser: "typescript",
-      semi: true,
-      singleQuote: true,
-      trailingComma: "all",
-      tabWidth: 2,
     });
   } catch (error) {
     console.error("代码格式化失败:", error);
