@@ -13,6 +13,7 @@ export interface ApiConfig {
     template?: Partial<CodeTemplate>;
     stripPathPrefixes?: string[];
     requestImportPath?: string;
+    yapiBaseUrl?: string; // Base URL for YAPI documentation links
 }
 
 
@@ -34,6 +35,8 @@ export interface YapiApiData {
     yapiBaseUrl?: string;
     projectId?: number;
     apiId?: number;
+    project_id?: number; // Alternative name for projectId
+    _id?: number; // Alternative name for apiId
 }
 
 export interface YapiCategory {

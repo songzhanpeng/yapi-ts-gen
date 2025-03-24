@@ -10,10 +10,23 @@ const fabric = require('@umijs/fabric');
  */
 export async function formatCode(code: string): Promise<string> {
   try {
-    return await prettier.format(code, {
+    const options = {
       ...fabric.prettier,
       parser: "typescript",
-    });
+      printWidth: 100,
+      tabWidth: 2,
+      useTabs: false,
+      semi: true,
+      singleQuote: true,
+      quoteProps: "as-needed",
+      jsxSingleQuote: false,
+      trailingComma: "all",
+      bracketSpacing: true,
+      arrowParens: "avoid",
+      endOfLine: "lf",
+    };
+    
+    return await prettier.format(code, options);
   } catch (error) {
     console.error("代码格式化失败:", error);
     return code; // 如果格式化失败，返回原始代码

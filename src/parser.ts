@@ -10,6 +10,7 @@ export interface ParsedApiData {
   yapiBaseUrl?: string;
   projectId?: number;
   apiId?: number;
+  hasRequiredParams?: boolean; // Flag to indicate if the params have any required fields
 }
 
 // 解析 JSON Schema 为 TypeScript 类型
@@ -28,7 +29,10 @@ export function parseJsonSchema(schema: JsonSchema | null, level = 0): string {
 
   switch (schema.type) {
     case "object":
-      if (!schema.properties) return "Record<string, any>";
+      if (!schema.properties || Object.keys(schema.properties).length === 0) {
+        // 返回 "{}" 代替 "Record<string, never>"，避免语法错误
+        return "{}";
+      }
 
       const properties = Object.entries(schema.properties)
         .map(([key, value]) => {
@@ -48,7 +52,7 @@ export function parseJsonSchema(schema: JsonSchema | null, level = 0): string {
       return `{\n${properties}\n${indent}}`;
 
     case "array":
-      if (!schema.items) return "any[]";
+      if (!schema.items) return "unknown[]";
       const itemType = parseJsonSchema(schema.items, level);
       return `${itemType}[]`;
 
@@ -68,12 +72,20 @@ export function parseJsonSchema(schema: JsonSchema | null, level = 0): string {
     default:
       if (Array.isArray(schema.type)) {
         // 处理联合类型
-        const types = schema.type.map((t) =>
-          t === "null" ? "null" : parseJsonSchema({ type: t }, level)
-        );
-        return types.join(" | ");
+        const types = schema.type
+          .filter(t => t !== "null") // Handle null separately
+          .map(t => parseJsonSchema({ type: t }, level));
+        
+        const baseType = types.join(" | ");
+        
+        // Add null to union type if one of the types was null
+        if (schema.type.includes("null")) {
+          return `${baseType} | null`;
+        }
+        
+        return baseType;
       }
-      return "any";
+      return "unknown"; // Use unknown instead of any for better type safety
   }
 }
 
@@ -118,6 +130,7 @@ export function extractNameAndParams(
       params: "{}",
       response: "{}",
       pathParams: [],
+      hasRequiredParams: false,
     };
   }
 
@@ -151,7 +164,7 @@ export function extractNameAndParams(
 
   if (!functionName.toLowerCase().includes(method.toLowerCase())) {
     // Add method prefix to function name
-    functionName = method.toLowerCase() + functionName;
+    functionName = method.toLowerCase() + baseName + paramsName;
   } else {
     functionName = functionName.charAt(0).toLowerCase() + functionName.slice(1);
   }
@@ -169,5 +182,6 @@ export function extractNameAndParams(
     params: "{}",
     response: "{}",
     pathParams,
+    hasRequiredParams: pathParams.length > 0, // Path params are always required
   };
 }

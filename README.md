@@ -9,9 +9,11 @@ yapi-ts-gen is a TypeScript code generator for YApi. It helps developers automat
 
 ### Features
 - Generate TypeScript interface definitions from YApi
-- Generate API request functions
+- Generate API request functions with proper parameter handling
 - Support for custom request functions
 - Type-safe API calls
+- Smart detection of optional parameters
+- Clean and consistent code formatting
 
 ### Installation
 ```bash
@@ -53,11 +55,45 @@ const config = [
       "v2"
     ],
     // Import path for request utility
-    "requestImportPath": "@/utils/request"
+    "requestImportPath": "@/utils/request",
+    // Base URL for YApi documentation links in comments
+    "yapiBaseUrl": "http://your-yapi-domain"
   }
 ];
 
 module.exports = config;
+```
+
+### Generated Code Example
+The generated code will include TypeScript interfaces and functions like this:
+```typescript
+/** Get user information - Request params */
+export interface IGetUserByIdParams {
+  id: string; // Path parameter
+  include?: string; // Optional query parameter
+}
+
+/** Get user information - Response data */
+export interface IGetUserByIdResponse {
+  id: string;
+  name: string;
+  email?: string;
+}
+
+/** @see http://your-yapi-domain/project/123/interface/api/456 */
+/** Get user information GET /api/users/{id} */
+export async function getUserById(
+  params: IGetUserByIdParams,
+): Promise<IGetUserByIdResponse> {
+  const { id, ...restParams } = params;
+  return request<IGetUserByIdResponse>(`/api/users/${id}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    params: restParams,
+  });
+}
 ```
 
 ### License
@@ -72,9 +108,11 @@ yapi-ts-gen 是一个基于 YApi 的 TypeScript 代码生成器。它可以帮�
 
 ### 特性
 - 从 YApi 生成 TypeScript 接口定义
-- 生成 API 请求函数
+- 生成带有适当参数处理的 API 请求函数
 - 支持自定义请求函数
 - 类型安全的 API 调用
+- 智能检测可选参数
+- 清晰一致的代码格式
 
 ### 安装
 ```bash
@@ -116,11 +154,45 @@ const config = [
       "v2"
     ],
     // 请求工具的导入路径
-    "requestImportPath": "@/utils/request"
+    "requestImportPath": "@/utils/request",
+    // YApi 文档链接的基础 URL（用于注释中）
+    "yapiBaseUrl": "http://your-yapi-domain"
   }
 ];
 
 module.exports = config;
+```
+
+### 生成代码示例
+生成的代码将包含 TypeScript 接口和函数，如下所示：
+```typescript
+/** 获取用户信息 - 请求参数 */
+export interface IGetUserByIdParams {
+  id: string; // 路径参数
+  include?: string; // 可选查询参数
+}
+
+/** 获取用户信息 - 响应数据 */
+export interface IGetUserByIdResponse {
+  id: string;
+  name: string;
+  email?: string;
+}
+
+/** @see http://your-yapi-domain/project/123/interface/api/456 */
+/** 获取用户信息 GET /api/users/{id} */
+export async function getUserById(
+  params: IGetUserByIdParams,
+): Promise<IGetUserByIdResponse> {
+  const { id, ...restParams } = params;
+  return request<IGetUserByIdResponse>(`/api/users/${id}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    params: restParams,
+  });
+}
 ```
 
 ### 许可证
