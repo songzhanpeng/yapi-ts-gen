@@ -102,15 +102,13 @@ function matchPath(path: string, stripPathPrefixes: string[]): string | null {
 }
 
 const replaceWord = (word: string) => {
-  if (word.includes("_")) {
-    return word
-      .split("_")
-      .map((w, index) =>
-        index === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)
-      )
-      .join("");
-  }
-  return word;
+  return word
+    .split(/[^a-zA-Z0-9]+/) // 匹配非字母数字、{、-的分隔符
+    .filter(Boolean) // 过滤空字符串（防止多个分隔符连续）
+    .map((w, index) =>
+      index === 0 ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+    )
+    .join("");
 };
 
 
@@ -148,10 +146,26 @@ export function extractNameAndParams(
       // 保持原始参数名称
       pathParams.push(paramName);
 
-      // 只在函数名中使用格式化的参数名
-      const formattedParam = replaceWord(paramName);
+      // 修改这里，保持参数名中的大小写
+      // 如果参数名本身是驼峰式的（如userId, orgId），要保持原样
+      // 如果是下划线分隔的，将其转为驼峰式
+      let formattedParam = paramName;
+      
+      // 如果参数名包含下划线，将其转为驼峰式
+      if (paramName.includes('_')) {
+        formattedParam = paramName.split('_')
+          .map((part, index) => 
+            index === 0 ? part.toLowerCase() : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+          )
+          .join('');
+      }
+      
+      // 确保每个单词的首字母都是大写的（针对 By 后面的部分）
+      // 尊重已有的驼峰命名法
+      const camelCaseName = formattedParam.replace(/([a-z])([A-Z])/g, '$1$2');
+      
       paramsName +=
-        "By" + formattedParam.charAt(0).toUpperCase() + formattedParam.slice(1);
+        "By" + camelCaseName.charAt(0).toUpperCase() + camelCaseName.slice(1);
     } else {
       // It's a normal path segment, convert to camel case and add it
       const formattedPart = replaceWord(part);

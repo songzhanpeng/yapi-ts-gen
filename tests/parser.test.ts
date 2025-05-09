@@ -60,6 +60,15 @@ describe('Parser', () => {
             interfaceName: 'GetSvcApiV1ProjectSubsystemsByProjectId',
         });
     });
+
+    it('should handle path with dash in path', () => {
+        const result = extractNameAndParams('/api/trace_matrix/resourceuse+-upload', 'POST', []);
+        expect(result).toEqual({
+            ...result,
+            functionName: 'postApiTraceMatrixResourceuseUpload',
+            interfaceName: 'PostApiTraceMatrixResourceuseUpload',
+        });
+    });
 });
 
 
