@@ -5,6 +5,12 @@ export interface CodeTemplate {
     interfaceTemplate: string;
 }
 
+// 新增：自定义输出规则接口
+export interface CustomOutputRule {
+    matches: string[]; // 匹配的路径前缀数组
+    outputFileName: string; // 输出文件名
+}
+
 export interface ApiConfig {
     yapiUrl: string;
     outputDir: string;
@@ -14,6 +20,8 @@ export interface ApiConfig {
     stripPathPrefixes?: string[];
     requestImportPath?: string;
     yapiBaseUrl?: string; // Base URL for YAPI documentation links
+    // 新增：自定义输出规则，用于将匹配的接口输出到指定文件
+    customOutputs?: CustomOutputRule[];
 }
 
 

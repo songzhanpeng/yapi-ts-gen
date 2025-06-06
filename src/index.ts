@@ -2,7 +2,7 @@ import { downloadApiJson } from './fetcher';
 import { extractNameAndParams, ParsedApiData, parseJsonSchema } from './parser';
 import { generateCode, saveToFile } from './generator';
 import { formatCode } from './utils';
-import { ApiConfig, YapiApiData, YapiCategory, YapiQueryParam } from './types';
+import { ApiConfig, YapiApiData, YapiCategory, YapiQueryParam, CustomOutputRule } from './types';
 
 export async function main(configs: ApiConfig[]) {
   let successCount = 0;
@@ -129,9 +129,64 @@ export async function main(configs: ApiConfig[]) {
       }
 
       console.log(`Generated ${allApis.length} API interfaces.`);
-      const code = generateCode(allApis, config.requestImportPath || '@/utils/request');
-      const formattedCode = await formatCode(code);
-      saveToFile(formattedCode, `${config.outputDir}/${config.outputFileName}`);
+
+      // 新增：根据 customOutputs 规则分组接口
+      if (config.customOutputs && config.customOutputs.length > 0) {
+        const apiGroups = new Map<string, ParsedApiData[]>();
+        const unmatchedApis: ParsedApiData[] = [];
+
+        // 为每个自定义输出规则初始化空数组
+        config.customOutputs.forEach(rule => {
+          apiGroups.set(rule.outputFileName, []);
+        });
+
+        // 对每个接口进行分组
+        allApis.forEach(api => {
+          let matched = false;
+          console.log(api.path);
+          
+          // 检查是否匹配任何自定义输出规则
+          for (const rule of config.customOutputs!) {
+            for (const match of rule.matches) {
+              if (api.path.startsWith(match)) {
+                apiGroups.get(rule.outputFileName)!.push(api);
+                matched = true;
+                break;
+              }
+            }
+            if (matched) break;
+          }
+
+          // 如果没有匹配任何规则，则放入默认组
+          if (!matched) {
+            unmatchedApis.push(api);
+          }
+        });
+
+        // 生成自定义输出文件
+        for (const [fileName, apis] of apiGroups.entries()) {
+          if (apis.length > 0) {
+            const code = generateCode(apis, config.requestImportPath || '@/utils/request');
+            const formattedCode = await formatCode(code);
+            saveToFile(formattedCode, `${config.outputDir}/${fileName}`);
+            console.log(`Generated ${apis.length} interfaces to ${fileName}`);
+          }
+        }
+
+        // 生成默认输出文件（包含未匹配的接口）
+        if (unmatchedApis.length > 0) {
+          const code = generateCode(unmatchedApis, config.requestImportPath || '@/utils/request');
+          const formattedCode = await formatCode(code);
+          saveToFile(formattedCode, `${config.outputDir}/${config.outputFileName}`);
+          console.log(`Generated ${unmatchedApis.length} interfaces to ${config.outputFileName} (default)`);
+        }
+      } else {
+        // 原有逻辑：所有接口输出到一个文件
+        const code = generateCode(allApis, config.requestImportPath || '@/utils/request');
+        const formattedCode = await formatCode(code);
+        saveToFile(formattedCode, `${config.outputDir}/${config.outputFileName}`);
+      }
+
       successCount++;
     } catch (error) {
       console.error(`Error processing ${config.yapiUrl}:`, error);

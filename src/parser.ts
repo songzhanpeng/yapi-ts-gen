@@ -45,7 +45,12 @@ export function parseJsonSchema(schema: JsonSchema | null, level = 0): string {
           const description = value.description
             ? ` // ${value.description}`
             : "";
-          return `${indent}${key}${!isRequired || isNullable ? "?" : ""}: ${type};${description}`;
+          
+          // 处理特殊键名 (检查键名是否包含空格或其他需要转义的特殊字符)
+          const needsQuotes = /[\s\-\+\!\@\#\$\%\^\&\*\(\)\[\]\{\}\;\:\'\"\,\.\<\>\/\\\?]/.test(key);
+          const formattedKey = needsQuotes ? `"${key}"` : key;
+          
+          return `${indent}${formattedKey}${!isRequired || isNullable ? "?" : ""}: ${type};${description}`;
         })
         .join("\n");
 
