@@ -11,6 +11,7 @@ export interface ParsedApiData {
   projectId?: number;
   apiId?: number;
   hasRequiredParams?: boolean; // Flag to indicate if the params have any required fields
+  headers?: string; // 新增：生成的headers代码字符串
 }
 
 // 解析 JSON Schema 为 TypeScript 类型

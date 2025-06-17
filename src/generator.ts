@@ -12,7 +12,8 @@ function generateInterface(apiData: ParsedApiData): string {
     params, 
     response, 
     pathParams,
-    hasRequiredParams
+    hasRequiredParams,
+    headers
   } = apiData;
 
   const hasPathParams = pathParams.length > 0;
@@ -31,6 +32,11 @@ function generateInterface(apiData: ParsedApiData): string {
     }
     return typeStr;
   };
+
+  // 使用动态生成的headers，如果没有则使用默认值
+  const requestHeaders = headers || `{
+      'Content-Type': 'application/json',
+    }`;
 
   // 生成参数接口
   const paramsInterface = `/** ${title} - 请求参数 */
@@ -53,9 +59,7 @@ export async function ${functionName}(
   const { ${pathParams.join(', ')}, ...restParams } = params;
   return request<I${interfaceName}Response>(\`${urlPath}\`, {
     method: '${method}',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: ${requestHeaders},
     ${isGet ? 'params: restParams' : 'data: restParams'}
   });
 }`;
@@ -67,9 +71,7 @@ export async function ${functionName}(
 ): Promise<I${interfaceName}Response> {
   return request<I${interfaceName}Response>('${apiPath}', {
     method: '${method}',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: ${requestHeaders},
     ${isGet ? 'params: params || {}' : 'data: params || {}'}
   });
 }`;
@@ -80,9 +82,7 @@ export async function ${functionName}(
 ): Promise<I${interfaceName}Response> {
   return request<I${interfaceName}Response>('${apiPath}', {
     method: '${method}',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: ${requestHeaders},
     ${isGet ? 'params: params' : 'data: params'}
   });
 }`;

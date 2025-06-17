@@ -24,6 +24,14 @@ export interface ApiConfig {
     customOutputs?: CustomOutputRule[];
 }
 
+// 新增：请求头接口定义
+export interface YapiRequestHeader {
+    required: string;
+    _id: string;
+    name: string;
+    value?: string;
+    desc?: string;
+}
 
 export interface YapiQueryParam {
     name: string;
@@ -45,6 +53,7 @@ export interface YapiApiData {
     apiId?: number;
     project_id?: number; // Alternative name for projectId
     _id?: number; // Alternative name for apiId
+    req_headers?: YapiRequestHeader[]; // 新增：请求头数组
 }
 
 export interface YapiCategory {

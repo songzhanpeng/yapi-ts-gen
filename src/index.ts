@@ -1,7 +1,7 @@
 import { downloadApiJson } from './fetcher';
 import { extractNameAndParams, ParsedApiData, parseJsonSchema } from './parser';
 import { generateCode, saveToFile } from './generator';
-import { formatCode } from './utils';
+import { formatCode, generateHeaders } from './utils';
 import { ApiConfig, YapiApiData, YapiCategory, YapiQueryParam, CustomOutputRule } from './types';
 
 export async function main(configs: ApiConfig[]) {
@@ -86,6 +86,10 @@ export async function main(configs: ApiConfig[]) {
             console.warn(`Warning: Failed to parse response body for ${api.path}:`, error);
           }
 
+
+          // 生成动态 headers
+          const headersCode = generateHeaders(api.req_headers);
+
           return { 
             functionName, 
             interfaceName, 
@@ -95,6 +99,7 @@ export async function main(configs: ApiConfig[]) {
             params: parseJsonSchema(paramSchema),
             pathParams,
             response,
+            headers: headersCode,
             yapiBaseUrl: api.yapiBaseUrl || config.yapiBaseUrl,
             projectId: api.project_id || api.projectId,
             apiId: api._id || api.apiId,
